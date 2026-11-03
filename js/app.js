@@ -142,11 +142,23 @@
     document.body.style.overflow = '';
   }
 
+  const vPrev = $('#viewer-prev');
+  const vNext = $('#viewer-next');
+
   function updateViewer() {
     const n = vTrack.children.length;
     const i = Math.round(vTrack.scrollLeft / vTrack.clientWidth);
     vCounter.textContent = n > 1 ? `${i + 1} / ${n}` : '';
+    vPrev.hidden = i <= 0;
+    vNext.hidden = i >= n - 1;
   }
+
+  const viewerGo = (dir) => {
+    if (viewer.classList.contains('is-zoomed')) return;
+    vTrack.scrollBy({ left: dir * vTrack.clientWidth, behavior: 'smooth' });
+  };
+  vPrev.addEventListener('click', () => viewerGo(-1));
+  vNext.addEventListener('click', () => viewerGo(1));
 
   vTrack.addEventListener('scroll', () => requestAnimationFrame(updateViewer), { passive: true });
   $('#viewer-close').addEventListener('click', closeViewer);
@@ -154,8 +166,8 @@
   document.addEventListener('keydown', (e) => {
     if (viewer.hidden) return;
     if (e.key === 'Escape') closeViewer();
-    if (e.key === 'ArrowRight') vTrack.scrollBy({ left: vTrack.clientWidth, behavior: 'smooth' });
-    if (e.key === 'ArrowLeft') vTrack.scrollBy({ left: -vTrack.clientWidth, behavior: 'smooth' });
+    if (e.key === 'ArrowRight') viewerGo(1);
+    if (e.key === 'ArrowLeft') viewerGo(-1);
   });
 
   /* ---------- Поделиться ссылкой на раздел ---------- */

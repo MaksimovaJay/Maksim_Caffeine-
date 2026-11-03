@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --bg: #1d1d1c;
   --fg: #dadada;
   --muted: #8b8b88;
@@ -297,7 +297,7 @@ button { font: inherit; color: inherit; }
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: rgba(14, 14, 13, 0.97);
+  background: #121211;
 }
 .viewer[hidden] { display: none; }
 
@@ -348,6 +348,33 @@ button { font: inherit; color: inherit; }
 @media (min-aspect-ratio: 1/1) {
   .viewer__slide.is-zoomed img { width: auto; height: 250%; }
 }
+
+.viewer__arrow {
+  position: absolute;
+  top: 50%;
+  width: 56px;
+  height: 80px;
+  margin-top: -40px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.viewer__arrow:hover { opacity: 1; }
+.viewer__arrow[hidden],
+.viewer.is-zoomed .viewer__arrow { display: none; }
+.viewer__arrow::before {
+  content: '';
+  position: absolute;
+  inset: 18px 16px;
+  background: var(--fg);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.5));
+}
+.viewer__arrow--next { right: 4px; }
+.viewer__arrow--prev { left: 4px; }
+.viewer__arrow--prev::before { clip-path: polygon(100% 0, 0 50%, 100% 100%); }
 
 .viewer__close {
   position: absolute;
