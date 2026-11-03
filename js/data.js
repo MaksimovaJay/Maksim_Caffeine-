@@ -19,7 +19,7 @@
 
 window.SITE = {
   currency: 'сом',
-  placeholderCount: 3,
+  placeholderCount: 4,
 
   sections: [
     {

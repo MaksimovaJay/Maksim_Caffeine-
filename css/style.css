@@ -6,8 +6,18 @@
   /* 50px на макете (1090px) ≈ 4.6% ширины экрана */
   --pad: clamp(16px, 4.6vw, 50px);
   --nav-h: 44px;
-  --slide-w: min(70vw, 460px);
   --gap: clamp(10px, 3.5vw, 24px);
+  /* Галерея: телефон — 1 фото + край следующего */
+  --peek: 22vw;
+  --slide-w: calc(100vw - var(--pad) - var(--gap) - var(--peek));
+}
+
+/* Компьютер — 2 фото целиком + край третьего */
+@media (min-width: 900px) {
+  :root {
+    --peek: 10vw;
+    --slide-w: calc((100vw - var(--pad) - var(--gap) * 2 - var(--peek)) / 2);
+  }
 }
 
 * { box-sizing: border-box; }
@@ -268,8 +278,7 @@ button { font: inherit; color: inherit; }
 }
 .gallery::after {
   right: 0;
-  width: calc(100vw - var(--pad) - var(--slide-w) - var(--gap));
-  max-width: 50%;
+  width: var(--peek);
   background: linear-gradient(to right, rgba(29, 29, 28, 0.15), rgba(29, 29, 28, 0.85));
 }
 .gallery::before {
