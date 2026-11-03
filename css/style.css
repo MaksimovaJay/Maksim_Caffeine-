@@ -213,15 +213,16 @@ button { font: inherit; color: inherit; }
   height: 100%;
   object-fit: cover;
 }
-.slide--ph {
+.slide--ph,
+.viewer__ph {
   display: grid;
   place-items: center;
-  cursor: default;
   background:
     repeating-linear-gradient(135deg, transparent 0 14px, rgba(255, 255, 255, 0.025) 14px 28px),
     var(--ph);
 }
-.slide--ph span {
+.slide--ph span,
+.viewer__ph span {
   color: var(--muted);
   font-size: 14px;
   text-transform: uppercase;
@@ -254,13 +255,32 @@ button { font: inherit; color: inherit; }
 .gallery__arrow--prev { left: 4px; }
 .gallery__arrow--prev::before { clip-path: polygon(100% 0, 0 50%, 100% 100%); }
 
-.gallery__counter {
-  margin-top: 10px;
-  padding: 0 var(--pad);
-  color: var(--muted);
-  font-size: 13px;
-  letter-spacing: 0.08em;
+/* Затемнение краёв: справа — следующее фото уходит в тень, как на макете */
+.gallery::before,
+.gallery::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity 0.3s;
 }
+.gallery::after {
+  right: 0;
+  width: calc(100vw - var(--pad) - var(--slide-w) - var(--gap));
+  max-width: 50%;
+  background: linear-gradient(to right, rgba(29, 29, 28, 0.15), rgba(29, 29, 28, 0.85));
+}
+.gallery::before {
+  left: 0;
+  width: var(--pad);
+  background: linear-gradient(to left, rgba(29, 29, 28, 0), rgba(29, 29, 28, 0.85));
+}
+.gallery.is-end::after,
+.gallery.is-start::before { opacity: 0; }
+
+.gallery__arrow { z-index: 2; }
 
 /* ---------- Полноэкранный просмотр ---------- */
 
@@ -293,6 +313,31 @@ button { font: inherit; color: inherit; }
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  cursor: zoom-in;
+}
+.viewer__ph {
+  width: min(90vw, 90vh);
+  aspect-ratio: 1;
+}
+
+/* Увеличение: фото в 2.5 раза, двигается пальцем/прокруткой */
+.viewer.is-zoomed .viewer__track { overflow: hidden; }
+.viewer__slide.is-zoomed {
+  display: block;
+  padding: 0;
+  overflow: auto;
+  scrollbar-width: none;
+}
+.viewer__slide.is-zoomed::-webkit-scrollbar { display: none; }
+.viewer__slide.is-zoomed img {
+  max-width: none;
+  max-height: none;
+  width: 250%;
+  height: auto;
+  cursor: zoom-out;
+}
+@media (min-aspect-ratio: 1/1) {
+  .viewer__slide.is-zoomed img { width: auto; height: 250%; }
 }
 
 .viewer__close {

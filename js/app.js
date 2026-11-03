@@ -56,11 +56,11 @@
         img.loading = 'lazy';
         img.alt = `${label} — фото ${i + 1}`;
         slide.append(img);
-        slide.addEventListener('click', () => openViewer(photos, i));
       } else {
         slide.classList.add('slide--ph');
         slide.innerHTML = `<span>фото ${i + 1}</span>`;
       }
+      slide.addEventListener('click', () => openViewer(items, i));
       track.append(slide);
     });
 
@@ -68,17 +68,18 @@
     const next = el('button', 'gallery__arrow gallery__arrow--next');
     prev.setAttribute('aria-label', 'Предыдущее фото');
     next.setAttribute('aria-label', 'Следующее фото');
-    const counter = el('div', 'gallery__counter');
 
     const slides = [...track.children];
     const step = () => (slides[1] ? slides[1].offsetLeft - slides[0].offsetLeft : track.clientWidth);
     const atEnd = () => track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
 
     const update = () => {
-      const i = atEnd() ? slides.length - 1 : Math.round(track.scrollLeft / step());
-      counter.textContent = `${i + 1} / ${slides.length}`;
-      prev.hidden = track.scrollLeft < 4;
-      next.hidden = atEnd();
+      const start = track.scrollLeft < 4;
+      const end = atEnd();
+      prev.hidden = start;
+      next.hidden = end;
+      wrap.classList.toggle('is-start', start);
+      wrap.classList.toggle('is-end', end);
     };
 
     prev.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: 'smooth' }));
@@ -87,7 +88,7 @@
     window.addEventListener('resize', update);
     requestAnimationFrame(update);
 
-    wrap.append(track, prev, next, counter);
+    wrap.append(track, prev, next);
     return wrap;
   }
 
@@ -99,12 +100,18 @@
 
   function openViewer(photos, start) {
     vTrack.innerHTML = '';
-    photos.forEach((src) => {
+    photos.forEach((src, i) => {
       const f = el('figure', 'viewer__slide');
-      const img = el('img');
-      img.src = src;
-      img.alt = '';
-      f.append(img);
+      if (src) {
+        const img = el('img');
+        img.src = src;
+        img.alt = '';
+        // нажатие по фото — увеличить / уменьшить
+        img.addEventListener('click', (e) => { e.stopPropagation(); toggleZoom(f, e); });
+        f.append(img);
+      } else {
+        f.append(el('div', 'viewer__ph', `<span>фото ${i + 1}</span>`));
+      }
       vTrack.append(f);
     });
     viewer.hidden = false;
@@ -113,7 +120,24 @@
     updateViewer();
   }
 
+  function toggleZoom(slide, e) {
+    const img = slide.querySelector('img');
+    const zoom = !slide.classList.contains('is-zoomed');
+    // точка нажатия в долях от размера картинки
+    const r = img.getBoundingClientRect();
+    const fx = (e.clientX - r.left) / r.width;
+    const fy = (e.clientY - r.top) / r.height;
+    slide.classList.toggle('is-zoomed', zoom);
+    viewer.classList.toggle('is-zoomed', zoom);
+    if (zoom) {
+      slide.scrollLeft = fx * slide.scrollWidth - slide.clientWidth / 2;
+      slide.scrollTop = fy * slide.scrollHeight - slide.clientHeight / 2;
+    }
+  }
+
   function closeViewer() {
+    vTrack.querySelectorAll('.is-zoomed').forEach((s) => s.classList.remove('is-zoomed'));
+    viewer.classList.remove('is-zoomed');
     viewer.hidden = true;
     document.body.style.overflow = '';
   }
