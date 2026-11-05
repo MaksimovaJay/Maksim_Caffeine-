@@ -4,15 +4,43 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#1d1d1c">
-  <title>Каталог</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400&display=swap">
+  <title>HoReCa Market — аксессуары для заведений</title>
+  <meta name="description" content="Салфетницы, чек-буки, меню, таблички Reserved, куверты и индивидуальные изделия для кафе, ресторанов и баров.">
+
+  <!-- Превью ссылки в мессенджерах -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="HoReCa Market">
+  <meta property="og:description" content="Салфетницы, чек-буки, меню, таблички Reserved, куверты для кафе, ресторанов и баров.">
+  <meta property="og:image" content="https://maksimovajay.github.io/Maksim_Caffeine-/images/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" type="image/png" href="images/favicon-64.png">
+  <link rel="apple-touch-icon" href="images/favicon-180.png">
+  <link rel="preload" href="fonts/exo2-black.otf" as="font" type="font/otf" crossorigin>
+  <link rel="preload" href="fonts/exo2-light.otf" as="font" type="font/otf" crossorigin>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <nav class="nav" id="nav" aria-label="Разделы"></nav>
+  <header class="header">
+    <a class="header__logo" href="#" aria-label="HoReCa Market — в начало">
+      <img class="header__icon" src="images/logo-icon.png" alt="">
+      <img class="header__text" src="images/logo-text.png" alt="HoReCa Market">
+    </a>
+  </header>
+
+  <nav class="nav" aria-label="Разделы">
+    <a class="nav__logo" href="#" aria-label="В начало"><img src="images/logo-icon.png" alt=""></a>
+    <div class="nav__links" id="nav-links"></div>
+  </nav>
+
   <main id="main"></main>
+
+  <footer class="footer">
+    <img class="footer__logo" src="images/logo-text.png" alt="HoReCa Market">
+    <p>Изготовление аксессуаров для кафе, ресторанов и баров</p>
+  </footer>
 
   <div class="viewer" id="viewer" hidden>
     <div class="viewer__track" id="viewer-track"></div>
@@ -24,6 +52,7 @@
 
   <div class="toast" id="toast" hidden></div>
 
+  <script src="js/photos.js"></script>
   <script src="js/data.js"></script>
   <script src="js/app.js"></script>
 </body>
