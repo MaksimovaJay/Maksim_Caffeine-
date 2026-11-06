@@ -9,7 +9,8 @@
     if (html != null) e.innerHTML = html;
     return e;
   };
-  const isVideo = (src) => /\.(mp4|webm|mov)$/i.test(src);
+  const isDesktop = matchMedia('(hover: hover) and (pointer: fine)');
+  const isVideo =(src) => /\.(mp4|webm|mov)$/i.test(src);
   const priceHtml = (p) => `<span class="price">${p}<small>${SITE.currency}</small></span>`;
 
   /* ---------- Видео: грузим и играем только когда видно ---------- */
@@ -46,6 +47,7 @@
 
   function renderGallery(items, label) {
     const wrap = el('div', 'gallery');
+    const stage = el('div', 'gallery__stage');
     const track = el('div', 'gallery__track');
 
     items.forEach((src, i) => {
@@ -58,7 +60,7 @@
         img.src = src;
         img.loading = 'lazy';
         img.decoding = 'async';
-        img.alt = `${label} — фото ${i + 1}`;
+        img.alt = `${label} - фото ${i + 1}`;
         slide.append(img);
       }
       slide.addEventListener('click', () => openViewer(items, i));
@@ -74,6 +76,12 @@
     const step = () => (slides[1] ? slides[1].offsetLeft - slides[0].offsetLeft : track.clientWidth);
     const atEnd = () => track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
 
+    // Полоса прокрутки
+    const bar = el('div', 'gallery__bar');
+    const thumb = el('div', 'gallery__thumb');
+    bar.append(thumb);
+    const maxScroll = () => track.scrollWidth - track.clientWidth;
+
     const update = () => {
       const start = track.scrollLeft < 4;
       const end = atEnd();
@@ -81,7 +89,44 @@
       next.hidden = end;
       wrap.classList.toggle('is-start', start);
       wrap.classList.toggle('is-end', end);
+
+      const ratio = track.clientWidth / track.scrollWidth;
+      bar.hidden = ratio >= 0.999;
+      const pos = maxScroll() ? track.scrollLeft / maxScroll() : 0;
+      thumb.style.width = ratio * 100 + '%';
+      thumb.style.left = pos * (1 - ratio) * 100 + '%';
     };
+
+    // Тянуть за полосу (мышью или пальцем)
+    thumb.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      thumb.setPointerCapture(e.pointerId);
+      const startX = e.clientX;
+      const startScroll = track.scrollLeft;
+      const k = maxScroll() / (bar.clientWidth - thumb.offsetWidth);
+      track.style.scrollSnapType = 'none';
+      wrap.classList.add('is-dragging');
+      const move = (ev) => { track.scrollLeft = startScroll + (ev.clientX - startX) * k; };
+      const up = () => {
+        thumb.removeEventListener('pointermove', move);
+        thumb.removeEventListener('pointerup', up);
+        thumb.removeEventListener('pointercancel', up);
+        track.style.scrollSnapType = '';
+        wrap.classList.remove('is-dragging');
+      };
+      thumb.addEventListener('pointermove', move);
+      thumb.addEventListener('pointerup', up);
+      thumb.addEventListener('pointercancel', up);
+    });
+    // Нажатие по полосе - прыжок в это место
+    bar.addEventListener('pointerdown', (e) => {
+      if (e.target === thumb) return;
+      const r = bar.getBoundingClientRect();
+      const tw = thumb.offsetWidth;
+      const pos = Math.min(1, Math.max(0, (e.clientX - r.left - tw / 2) / (r.width - tw)));
+      track.scrollTo({ left: pos * maxScroll(), behavior: 'smooth' });
+    });
 
     prev.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: 'smooth' }));
     next.addEventListener('click', () => track.scrollBy({ left: step(), behavior: 'smooth' }));
@@ -89,7 +134,8 @@
     window.addEventListener('resize', update);
     requestAnimationFrame(update);
 
-    wrap.append(track, prev, next);
+    stage.append(track, prev, next);
+    wrap.append(stage, bar);
     return wrap;
   }
 
@@ -112,8 +158,8 @@
         img.src = src;
         img.alt = '';
         img.loading = 'lazy';
-        // нажатие по фото — увеличить / уменьшить
-        img.addEventListener('click', (e) => { e.stopPropagation(); toggleZoom(f, e); });
+        // на компьютере нажатие по фото - закрыть просмотр (на телефоне - свайп)
+        img.addEventListener('click', () => { if (isDesktop.matches) closeViewer(); });
         f.append(img);
       }
       vTrack.append(f);
@@ -124,27 +170,42 @@
     updateViewer();
   }
 
-  function toggleZoom(slide, e) {
-    const img = slide.querySelector('img');
-    const zoom = !slide.classList.contains('is-zoomed');
-    // точка нажатия в долях от размера картинки
-    const r = img.getBoundingClientRect();
-    const fx = (e.clientX - r.left) / r.width;
-    const fy = (e.clientY - r.top) / r.height;
-    slide.classList.toggle('is-zoomed', zoom);
-    viewer.classList.toggle('is-zoomed', zoom);
-    if (zoom) {
-      slide.scrollLeft = fx * slide.scrollWidth - slide.clientWidth / 2;
-      slide.scrollTop = fy * slide.scrollHeight - slide.clientHeight / 2;
-    }
-  }
-
   function closeViewer() {
     vTrack.innerHTML = '';
-    viewer.classList.remove('is-zoomed');
+    vTrack.style.transform = '';
+    viewer.style.backgroundColor = '';
     viewer.hidden = true;
     document.body.style.overflow = '';
   }
+
+  // Свайп вверх или вниз на телефоне - закрыть просмотр
+  let touch = null;
+  vTrack.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) { touch = null; return; }
+    touch = { x: e.touches[0].clientX, y: e.touches[0].clientY, dx: 0, dy: 0 };
+    vTrack.style.transition = 'none';
+  }, { passive: true });
+  vTrack.addEventListener('touchmove', (e) => {
+    if (!touch) return;
+    touch.dx = e.touches[0].clientX - touch.x;
+    touch.dy = e.touches[0].clientY - touch.y;
+    if (Math.abs(touch.dy) > Math.abs(touch.dx)) {
+      vTrack.style.transform = `translateY(${touch.dy}px)`;
+      viewer.style.backgroundColor = `rgba(18, 18, 17, ${Math.max(0.3, 1 - Math.abs(touch.dy) / 400)})`;
+    }
+  }, { passive: true });
+  vTrack.addEventListener('touchend', () => {
+    if (!touch) return;
+    const { dx, dy } = touch;
+    touch = null;
+    if (Math.abs(dy) > 90 && Math.abs(dy) > Math.abs(dx)) {
+      closeViewer();
+      return;
+    }
+    vTrack.style.transition = 'transform 0.2s';
+    vTrack.style.transform = '';
+    viewer.style.backgroundColor = '';
+  });
 
   function updateViewer() {
     const slides = vTrack.children;
@@ -161,7 +222,6 @@
   }
 
   const viewerGo = (dir) => {
-    if (viewer.classList.contains('is-zoomed')) return;
     vTrack.scrollBy({ left: dir * vTrack.clientWidth, behavior: 'smooth' });
   };
   vPrev.addEventListener('click', () => viewerGo(-1));
@@ -188,18 +248,25 @@
     toastTimer = setTimeout(() => (toast.hidden = true), 1800);
   }
 
+  // Сразу копируем ссылку, без меню «Поделиться»
   async function share(title, id) {
     const url = location.origin + location.pathname + '#' + id;
-    if (navigator.share) {
-      try { await navigator.share({ title, url }); } catch (_) {}
-      return;
-    }
+    let ok = false;
     try {
       await navigator.clipboard.writeText(url);
-      showToast('Ссылка скопирована');
+      ok = true;
     } catch (_) {
-      prompt('Ссылка:', url);
+      // запасной способ для старых браузеров
+      const ta = el('textarea');
+      ta.value = url;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.append(ta);
+      ta.select();
+      try { ok = document.execCommand('copy'); } catch (_) {}
+      ta.remove();
     }
+    showToast(ok ? 'Ссылка скопирована' : url);
   }
 
   const SHARE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/></svg>';
@@ -239,7 +306,7 @@
       head.append(el('h3', 'model__title', model.heading
         ? `<b>${model.heading}</b>`
         : `<b>Модель:</b> <i>${model.name}</i>`));
-      if (model.id) head.append(shareButton(`${sec.title} — ${model.heading || model.name}`, box.id));
+      if (model.id) head.append(shareButton(`${sec.title} - ${model.heading || model.name}`, box.id));
       box.append(head);
     }
 
@@ -329,7 +396,7 @@
     const target = id && document.getElementById(id);
     if (target) target.scrollIntoView({ behavior: 'instant' });
   }
-  // ждём шрифты и иконки моделей — они меняют высоту страницы
+  // ждём шрифты и иконки моделей - они меняют высоту страницы
   const icons = [...document.querySelectorAll('.variant img')].map((img) => img.decode().catch(() => {}));
   Promise.all([document.fonts ? document.fonts.ready : null, ...icons]).then(() => requestAnimationFrame(goToHash));
 })();

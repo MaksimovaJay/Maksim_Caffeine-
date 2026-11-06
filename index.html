@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#1d1d1c">
-  <title>HoReCa Market — аксессуары для заведений</title>
+  <title>HoReCa Market - аксессуары для заведений</title>
   <meta name="description" content="Салфетницы, чек-буки, меню, таблички Reserved, куверты и индивидуальные изделия для кафе, ресторанов и баров.">
 
   <!-- Превью ссылки в мессенджерах -->
@@ -24,8 +24,7 @@
 </head>
 <body>
   <header class="header">
-    <a class="header__logo" href="#" aria-label="HoReCa Market — в начало">
-      <img class="header__icon" src="images/logo-icon.png" alt="">
+    <a class="header__logo" href="#" aria-label="HoReCa Market - в начало">
       <img class="header__text" src="images/logo-text.png" alt="HoReCa Market">
     </a>
   </header>
@@ -39,7 +38,17 @@
 
   <footer class="footer">
     <img class="footer__logo" src="images/logo-text.png" alt="HoReCa Market">
-    <p>Изготовление аксессуаров для кафе, ресторанов и баров</p>
+    <p class="footer__note">Все изделия разработаны и изготовлены нашей студией собственноручно и фотографии являются настоящими, без использования ИИ</p>
+    <div class="footer__links">
+      <a class="contact" href="https://api.whatsapp.com/send/?phone=996776077501" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.2c.2-.5.5-.6.8-.6h.5l1 2.3-.7.9c.5 1.1 1.4 2 2.5 2.5l.9-.7 2.3 1v.5c0 .3-.1.6-.6.8-.6.4-1.6.5-2.9-.1a8.4 8.4 0 0 1-3.8-3.8c-.6-1.3-.5-2.3-.1-2.9z"/></svg>
+        <span>Обсудить и оформить заказ можно у нас в <b>WhatsApp</b></span>
+      </a>
+      <a class="contact" href="https://www.instagram.com/horeca.market.kg/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r="0.6"/></svg>
+        <span>Подпишитесь на наш инстаграм, чтобы видеть все новинки <b>@horeca.market.kg</b></span>
+      </a>
+    </div>
   </footer>
 
   <div class="viewer" id="viewer" hidden>
@@ -47,7 +56,7 @@
     <button class="viewer__arrow viewer__arrow--prev" id="viewer-prev" aria-label="Предыдущее фото"></button>
     <button class="viewer__arrow viewer__arrow--next" id="viewer-next" aria-label="Следующее фото"></button>
     <div class="viewer__counter" id="viewer-counter"></div>
-    <button class="viewer__close" id="viewer-close" aria-label="Закрыть">&times;</button>
+    <button class="viewer__close" id="viewer-close" aria-label="Закрыть"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
   </div>
 
   <div class="toast" id="toast" hidden></div>
